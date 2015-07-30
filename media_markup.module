@@ -1,0 +1,180 @@
+<?php
+
+/**
+ * @file media_markup/media_markup.module
+ *
+ * Media: HTML Snippets provides a stream wrapper and formatters for reusable
+ * HTML snippets.
+ */
+
+// Hooks and callbacks for integrating with File Entity module for display.
+require_once dirname(__FILE__) . '/includes/media_markup.formatters.inc';
+
+/**
+ * Implements hook_ctools_plugin_api()
+ */
+function media_markup_ctools_plugin_api($owner, $api) {
+  if ($owner == 'file_entity' && $api == 'file_type') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_file_default_types().
+ */
+function media_markup_file_default_types() {
+
+  return array(
+    'snippet' => (object) array(
+      'api_version' => 1,
+      'type' => 'snippet',
+      'label' => t('Snippet'),
+      'description' => t('A <em>Snippet</em> file is a fieldable entity for markup reuse'),
+      'mimetypes' => array(
+        'snippet/*',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_stream_wrappers()
+ */
+function media_markup_stream_wrappers() {
+  return array(
+    'snippet' => array(
+      'name' => t('Markup Snippet'),
+      'class' => 'MediaMarkupStreamWrapper',
+      'description' => t('Re-usable markup snippets'),
+      'type' => STREAM_WRAPPERS_READ_VISIBLE,
+    )
+  );
+}
+
+/**
+ * Implements hook_media_browser_plugin_info().
+ */
+function media_markup_media_browser_plugin_info() {
+  $info['media_markup'] = array(
+    'title' => t('Snippet'),
+    'class' => 'MediaMarkupBrowser',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_theme()
+ */
+function media_markup_theme($existing, $type, $theme, $path) {
+  return array(
+    'media_markup' => array(
+      'variables' => array('file' => NULL, 'display' => NULL),
+      'file' => 'media_markup.theme.inc',
+      'path' => $path . '/themes',
+      'template' => 'media-markup',
+    ),
+  );
+}
+
+/**
+ * Theme preprocessor for theme_file_link
+ * Clean up link title
+ */
+function media_markup_preprocess_file_link(&$variables) {
+  if ($variables['file']->type == 'snippet') {
+    $file = &$variables['file'];
+    $file->filename = $file->description = preg_replace('/(\.[0-9]{10}\.snippet)$/i', '', $file->filename);
+  }
+}
+
+/**
+ * Implements hook_file_mimetype_mapping_alter()
+ */
+function media_markup_file_mimetype_mapping_alter(&$mapping) {
+  $mapping['mimetypes'][] = 'snippet/html';
+}
+
+/**
+ * Implements hook_media_format_form_prepare_alter()
+ *
+ * Remove preview
+ */
+function media_markup_media_format_form_prepare_alter(&$form, &$form_state, $file) {
+  if (strpos($form['#media']->filemime, 'snippet/') !== FALSE ) {
+    $form['preview']['#access'] = $form['options']['fields'] = FALSE;
+  }
+}
+
+/**
+ * Provides a form for adding media items from YouTube search.
+ */
+function media_markup_add($form, &$form_state, $options = array()) {
+
+  $default = isset($form_state['input']['title']) ? $form_state['input']['title'] : '';
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => $default,
+  );
+
+  // Create mock file object
+  $uri = file_stream_wrapper_uri_normalize('snippet://' . sha1(time()));
+  $file = file_uri_to_object($uri, TRUE);
+  $file->type = 'snippet';
+
+  // Attach field
+  if ($file && field_info_instances('file', $file->type)) {
+    field_attach_form('file', $file, $form, $form_state);
+  }
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit callback
+ */
+function media_markup_add_submit($form, &$form_state) {
+  $title = check_plain($form_state['values']['title']);
+  $uri = file_stream_wrapper_uri_normalize('snippet://' . $title . '.' . time() .'.snippet');
+
+  try {
+    $file = file_uri_to_object($uri, TRUE);
+    file_save($file);
+
+    // Save attached fields. The file needs to be saved above otherwise this
+    // will throw a 'missing entity bundle' error
+    entity_form_submit_build_entity('file', $file, $form, $form_state);
+    file_save($file);
+  }
+  catch (Exception $e) {
+    form_set_error('title', $e->getMessage());
+  }
+
+  if ($file->fid) {
+    $form_state['file'] = $file;
+    drupal_set_message(t('@type %name was created.', array('@type' => file_entity_type_get_name($file), '%name' => $file->filename)));
+  }
+  else {
+    drupal_set_message(t('An error occurred and no snippet was created.'), 'error');
+    return;
+  }
+
+  // Figure out destination.
+  $destination = array('destination' => 'file/' . $file->fid);
+  if (isset($_GET['destination'])) {
+    $destination = drupal_get_destination();
+    unset($_GET['destination']);
+  }
+  elseif (user_access('administer files')) {
+    $destination = array('destination' => 'admin/content/file');
+  }
+  $form_state['redirect'] = $destination['destination'];
+}

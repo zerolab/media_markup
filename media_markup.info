@@ -1,0 +1,10 @@
+name = Media: Markup
+description = Provides HTML snippets support for File Entity and the Media module.
+package = "Media"
+
+files[] = includes/media_markup.formatters.inc
+files[] = includes/MediaMarkupStreamWrapper.inc
+files[] = includes/MediaMarkupBrowser.inc
+
+core = 7.x
+version = "7.x-2.x"
