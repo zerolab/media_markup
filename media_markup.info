@@ -7,4 +7,3 @@ files[] = includes/MediaMarkupStreamWrapper.inc
 files[] = includes/MediaMarkupBrowser.inc
 
 core = 7.x
-version = "7.x-2.x"

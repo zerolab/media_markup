@@ -1,17 +1,17 @@
 <?php
 
 /**
- * @file media_markup/media_markup.module
+ * @file
+ * Media: HTML Snippets.
  *
- * Media: HTML Snippets provides a stream wrapper and formatters for reusable
- * HTML snippets.
+ * Provides a stream wrapper and formatters for reusable HTML snippets.
  */
 
 // Hooks and callbacks for integrating with File Entity module for display.
 require_once dirname(__FILE__) . '/includes/media_markup.formatters.inc';
 
 /**
- * Implements hook_ctools_plugin_api()
+ * Implements hook_ctools_plugin_api().
  */
 function media_markup_ctools_plugin_api($owner, $api) {
   if ($owner == 'file_entity' && $api == 'file_type') {
@@ -38,7 +38,7 @@ function media_markup_file_default_types() {
 }
 
 /**
- * Implements hook_stream_wrappers()
+ * Implements hook_stream_wrappers().
  */
 function media_markup_stream_wrappers() {
   return array(
@@ -47,7 +47,7 @@ function media_markup_stream_wrappers() {
       'class' => 'MediaMarkupStreamWrapper',
       'description' => t('Re-usable markup snippets'),
       'type' => STREAM_WRAPPERS_READ_VISIBLE,
-    )
+    ),
   );
 }
 
@@ -64,7 +64,7 @@ function media_markup_media_browser_plugin_info() {
 }
 
 /**
- * Implements hook_theme()
+ * Implements hook_theme().
  */
 function media_markup_theme($existing, $type, $theme, $path) {
   return array(
@@ -78,8 +78,9 @@ function media_markup_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Theme preprocessor for theme_file_link
- * Clean up link title
+ * Theme preprocessor for theme_file_link().
+ *
+ * Cleans up the link title.
  */
 function media_markup_preprocess_file_link(&$variables) {
   if ($variables['file']->type == 'snippet') {
@@ -89,19 +90,19 @@ function media_markup_preprocess_file_link(&$variables) {
 }
 
 /**
- * Implements hook_file_mimetype_mapping_alter()
+ * Implements hook_file_mimetype_mapping_alter().
  */
 function media_markup_file_mimetype_mapping_alter(&$mapping) {
   $mapping['mimetypes'][] = 'snippet/html';
 }
 
 /**
- * Implements hook_media_format_form_prepare_alter()
+ * Implements hook_media_format_form_prepare_alter().
  *
- * Remove preview
+ * Removes the preview.
  */
 function media_markup_media_format_form_prepare_alter(&$form, &$form_state, $file) {
-  if (strpos($form['#media']->filemime, 'snippet/') !== FALSE ) {
+  if (strpos($form['#media']->filemime, 'snippet/') !== FALSE) {
     $form['preview']['#access'] = $form['options']['fields'] = FALSE;
   }
 }
@@ -119,12 +120,12 @@ function media_markup_add($form, &$form_state, $options = array()) {
     '#default_value' => $default,
   );
 
-  // Create mock file object
+  // Create mock file object.
   $uri = file_stream_wrapper_uri_normalize('snippet://' . sha1(time()));
   $file = file_uri_to_object($uri, TRUE);
   $file->type = 'snippet';
 
-  // Attach field
+  // Attach field.
   if ($file && field_info_instances('file', $file->type)) {
     field_attach_form('file', $file, $form, $form_state);
   }
@@ -139,18 +140,18 @@ function media_markup_add($form, &$form_state, $options = array()) {
 }
 
 /**
- * Submit callback
+ * Submit callback.
  */
 function media_markup_add_submit($form, &$form_state) {
   $title = check_plain($form_state['values']['title']);
-  $uri = file_stream_wrapper_uri_normalize('snippet://' . $title . '.' . time() .'.snippet');
+  $uri = file_stream_wrapper_uri_normalize('snippet://' . $title . '.' . time() . '.snippet');
 
   try {
     $file = file_uri_to_object($uri, TRUE);
     file_save($file);
 
     // Save attached fields. The file needs to be saved above otherwise this
-    // will throw a 'missing entity bundle' error
+    // will throw a 'missing entity bundle' error.
     entity_form_submit_build_entity('file', $file, $form, $form_state);
     file_save($file);
   }

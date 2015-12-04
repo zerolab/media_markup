@@ -1,8 +1,7 @@
 <?php
 
 /**
- * @file media_markup/includes/MediaMarkupBrowser.inc
- *
+ * @file
  * Definition of MediaMarkupBrowser.
  */
 
@@ -33,4 +32,5 @@ class MediaMarkupBrowser extends MediaBrowserPlugin {
     $build['form'] = drupal_get_form('media_markup_add', $this->params);
     return $build;
   }
+
 }

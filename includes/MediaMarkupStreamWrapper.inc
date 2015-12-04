@@ -1,21 +1,27 @@
 <?php
 
 /**
- *  @file media_markup/includes/MediaMarkupStreamWrapper.inc
+ * @file
+ * Extends MediaReadOnlyStreamWrapper.
  *
- *  Create an HTML Snippets Stream Wrapper class for the Media/Resource module.
+ * Allows handling HTML Snippets.
  */
 
 /**
- *  Create an instance like this:
- *  $snippet = new MediaMarkupStreamWrapper('snippet://');
+ * Media Markup class.
+ *
+ * @code
+ * // New snippet instance.
+ * $snippet = new MediaMarkupStreamWrapper('snippet://');.
+ * @endcode
  */
 class MediaMarkupStreamWrapper extends MediaReadOnlyStreamWrapper {
-  static function getMimeType($uri, $mapping = NULL) {
+  public static function getMimeType($uri, $mapping = NULL) {
     return 'snippet/html';
   }
 
-  function getTarget($f) {
+  public function getTarget($f) {
     return FALSE;
   }
+
 }

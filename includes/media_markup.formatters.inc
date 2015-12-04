@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @file media_markup/includes/media_markup.formatters.inc
+ * @file
+ * Formatters for Media: HTML Snippets.
  *
- * Formatters for Media: HTML Snippets
  */
 
 /**
- * Implements hook_file_formatter_info()
+ * Implements hook_file_formatter_info().
  */
 function media_markup_file_formatter_info() {
   $formatters = array();
@@ -24,7 +24,7 @@ function media_markup_file_formatter_info() {
 }
 
 /**
- * Implements hook_file_formatter_FORMATTER_settings()
+ * Implements hook_file_formatter_FORMATTER_settings().
  */
 function media_markup_file_formatter_markup_settings($form, &$form_state, $settings) {
   $element = array();
@@ -33,15 +33,14 @@ function media_markup_file_formatter_markup_settings($form, &$form_state, $setti
     '#type'  => 'checkbox',
     '#title' => t('Show placeholder thumbnail'),
     '#default_value' => !empty($settings['thumbnail']) ? $settings['thumbnail'] : 0,
-    '#description' => 'Markup Snippets piggyback on fielded file entities to display custom content. '.
-                      'Media Browser expects images, so enable this for certain modes to show a generic thumbnail (e.g. Preview)'
+    '#description' => t('Markup Snippets piggyback on fielded file entities to display custom content. Media Browser expects images, so enable this for certain modes to show a generic thumbnail (e.g. Preview)'),
   );
 
   return $element;
 }
 
 /**
- * Implements hook_file_formatter_FORMATTER_view()
+ * Implements hook_file_formatter_FORMATTER_view().
  */
 function media_markup_file_formatter_markup_view($file, $display, $langcode) {
   $scheme = file_uri_scheme($file->uri);
@@ -70,7 +69,7 @@ function media_markup_file_default_displays_alter(&$file_displays) {
   );
 
   foreach ($default_styles as $view_mode => $settings) {
-    $display_name = 'snippet__'. $view_mode .'__media_markup';
+    $display_name = "snippet__{$view_mode}__media_markup";
     $file_displays[$display_name] = (object) array(
       'api_version' => 1,
       'name' => $display_name,
