@@ -4,6 +4,7 @@
  * @file
  * Formatters for Media: HTML Snippets.
  *
+ * vim:set sw=2 ts=2 et ft=php:
  */
 
 /**

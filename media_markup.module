@@ -5,6 +5,8 @@
  * Media: HTML Snippets.
  *
  * Provides a stream wrapper and formatters for reusable HTML snippets.
+ *
+ * vim:set sw=2 ts=2 et ft=php:
  */
 
 // Hooks and callbacks for integrating with File Entity module for display.
